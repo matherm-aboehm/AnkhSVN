@@ -8,3 +8,17 @@ V4_bin/
 # Buildbot
 scripts/gh.cache.bat
 scripts/msbuild-version.rsp
+
+# SVN properties
+*proj.user
+*.dll
+*.exe
+*.obj
+Debug
+Release
+*~
+*.bak
+*.suo
+*.ncb
+build
+subversion

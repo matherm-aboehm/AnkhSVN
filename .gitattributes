@@ -1,0 +1,24 @@
+*			text=auto
+*.cs		text=auto
+*.resx		text=auto
+*.xml		text=auto
+*.xsl		text=auto
+*.xsd		text=auto
+*.csproj	text=auto
+*.sln		text=auto
+*.wxs		text=auto
+*.bmp		binary
+*.dll		binary
+*.gif		binary
+*.hxs		binary
+*.ico		binary
+*.msm		binary
+*.pdf		binary
+*.pdn		binary
+*.png		binary
+*.snk		binary
+*.zip		binary
+*.rtf		binary
+*.exe		binary
+*.cmd		text eol=crlf
+*.sh		text eol=lf

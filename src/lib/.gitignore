@@ -1,0 +1,13 @@
+*.dll
+*.exe
+*.obj
+bin
+obj
+Debug
+Release
+*~
+*.bak
+*proj.user
+*.suo
+*.ncb
+build
