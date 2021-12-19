@@ -918,6 +918,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="Ankh.UI.snk" />
+    <None Include="Ankh.UI.wxs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Annotate\AnnotateEditorControl.resx">

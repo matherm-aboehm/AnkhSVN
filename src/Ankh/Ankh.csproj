@@ -71,6 +71,7 @@
       <Link>.editorconfig</Link>
     </None>
     <None Include="Ankh.snk" />
+    <None Include="Ankh.wxs" />
     <Compile Include="Commands\ApplyPatch.cs" />
     <Compile Include="Commands\ItemAddToPending.cs">
     </Compile>
