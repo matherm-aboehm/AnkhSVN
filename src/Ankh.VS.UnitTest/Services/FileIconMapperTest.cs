@@ -13,6 +13,9 @@
 //  limitations under the License.
 
 using System;
+using System.ComponentModel;
+using System.Globalization;
+using System.Runtime.InteropServices;
 using NUnit.Framework;
 using Ankh.VS.SolutionExplorer;
 using AnkhSvn_UnitTestProject.Helpers;
@@ -24,6 +27,8 @@ using Moq;
 
 namespace AnkhSvn_UnitTestProject.Services
 {
+    using static NativeMethods;
+
     [TestFixture]
     public class FileIconMapperTest
     {
@@ -43,6 +48,32 @@ namespace AnkhSvn_UnitTestProject.Services
             mapper = null;
         }
 
+        private void VerifyEnglishLanguageOnCurrentThread()
+        {
+            Assert.That(CultureInfo.CurrentCulture, Is.EqualTo(CultureInfo.GetCultureInfo("en-US")));
+            uint lcid = GetThreadLocale();
+            Assert.That(lcid, Is.EqualTo(CultureInfo.CurrentCulture.LCID));
+            IntPtr pLngList = IntPtr.Zero;
+            uint cchLngList = 0;
+            uint numlng = 0;
+            if (!GetThreadPreferredUILanguages(MUI_LANGUAGE_NAME, out numlng, pLngList, ref cchLngList))
+                throw new Win32Exception();
+            try
+            {
+                pLngList = Marshal.AllocHGlobal((int)cchLngList * Marshal.SystemDefaultCharSize);
+                if (!GetThreadPreferredUILanguages(MUI_LANGUAGE_NAME, out numlng, pLngList, ref cchLngList))
+                    throw new Win32Exception();
+                Assert.That(numlng, Is.GreaterThan(0));
+                string lng = Marshal.PtrToStringUni(pLngList);
+                Assert.That(lng, Is.EqualTo("en-US"), "First language: {1}", lng);
+            }
+            finally
+            {
+                if (pLngList != IntPtr.Zero)
+                    Marshal.FreeHGlobal(pLngList);
+            }
+        }
+
         [Test]
         public void TestGetFileType_NullParameter_DoesntThrow()
         {
@@ -55,9 +86,12 @@ namespace AnkhSvn_UnitTestProject.Services
             Assert.That(mapper.GetFileType(""), Is.EqualTo(""));
         }
 
-        [Test]
+        [Test, SetCulture("en-US"), SetUICulture("en-US")]
         public void TestGetFileType_ExtensionWithAndWithDot_AreSame()
         {
+            SetThreadUILanguage(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US));
+            VerifyEnglishLanguageOnCurrentThread();
+
             Assert.That(mapper.GetFileType(".exe"), Is.EqualTo("Application"));
             Assert.That(mapper.GetFileType("exe"), Is.EqualTo("Application"));
         }
@@ -74,9 +108,12 @@ namespace AnkhSvn_UnitTestProject.Services
             { }
         }
 
-        [Test]
+        [Test, SetCulture("en-US"), SetUICulture("en-US")]
         public void TestExistingFileType()
         {
+            SetThreadUILanguage(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US));
+            VerifyEnglishLanguageOnCurrentThread();
+
             var statusCache = new Mock<ISvnStatusCache>();
 
             string tempFile = Path.GetTempFileName();
@@ -126,7 +163,7 @@ namespace AnkhSvn_UnitTestProject.Services
         [Test]
         public void TestProjectIconReference_DifferentIndex_NotEqual()
         {
-            var one = new ProjectIconReference(new IntPtr(3),4);
+            var one = new ProjectIconReference(new IntPtr(3), 4);
             var other = new ProjectIconReference(new IntPtr(3), 5);
 
             Assert.That(one, Is.Not.EqualTo(other));
@@ -180,21 +217,23 @@ namespace AnkhSvn_UnitTestProject.Services
         [Test]
         public void GetSpecialIcon()
         {
-            foreach(Environment.SpecialFolder folder in Enum.GetValues(typeof(Environment.SpecialFolder)))
+            bool isWinVistaOrAbove = VSVersion.OSVersion >= new Version(6, 0);
+            foreach (Environment.SpecialFolder folder in Enum.GetValues(typeof(Environment.SpecialFolder)))
             {
-                Assert.That(mapper.GetSpecialFolderIcon(folder), Is.GreaterThan(0), "Failed with value: {0}", folder);
+                if (isWinVistaOrAbove && (folder == Environment.SpecialFolder.LocalizedResources ||
+                    folder == Environment.SpecialFolder.CommonOemLinks))
+                    Assert.That(mapper.GetSpecialFolderIcon(folder), Is.EqualTo(-1), "Failed with value: {0}", folder);
+                else
+                    Assert.That(mapper.GetSpecialFolderIcon(folder), Is.GreaterThan(0), "Failed with value: {0}", folder);
             }
 
             foreach (WindowsSpecialFolder folder in Enum.GetValues(typeof(WindowsSpecialFolder)))
             {
-                if (folder == WindowsSpecialFolder.MyDocuments)
-                    continue; // fails, find out why
-                if (folder == WindowsSpecialFolder.ResourcesLocalized)
-                    continue;
-                if (folder == WindowsSpecialFolder.CommonOemLinks)
-                    continue;
-                    
-                Assert.That(mapper.GetSpecialFolderIcon(folder), Is.GreaterThan(0), "Failed with value: {0}", folder);
+                if (isWinVistaOrAbove && (folder == WindowsSpecialFolder.ResourcesLocalized ||
+                    folder == WindowsSpecialFolder.CommonOemLinks))
+                    Assert.That(mapper.GetSpecialFolderIcon(folder), Is.EqualTo(-1), "Failed with value: {0}", folder);
+                else
+                    Assert.That(mapper.GetSpecialFolderIcon(folder), Is.GreaterThan(0), "Failed with value: {0}", folder);
             }
 
             foreach (SpecialIcon icon in Enum.GetValues(typeof(SpecialIcon)))
@@ -219,7 +258,7 @@ namespace AnkhSvn_UnitTestProject.Services
         public void TestGetIcon()
         {
             var tempFileName = Path.Combine(Path.GetTempPath(), Path.GetTempFileName() + ".txt");
-            using(File.Create(tempFileName))
+            using (File.Create(tempFileName))
             {
             }
 
@@ -242,7 +281,7 @@ namespace AnkhSvn_UnitTestProject.Services
                 mapper.GetIcon(null);
                 Assert.Fail();
             }
-            catch(ArgumentNullException)
+            catch (ArgumentNullException)
             { }
         }
     }

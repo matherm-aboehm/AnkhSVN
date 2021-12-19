@@ -16,6 +16,8 @@ using System;
 
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TextManager.Interop;
+using EnvDTE;
+using Microsoft.VisualStudio.OLE.Interop;
 using Moq;
 using NUnit.Framework;
 
@@ -26,6 +28,7 @@ using Ankh.Scc;
 using Ankh.Selection;
 using Ankh.UI;
 using Ankh.VS;
+using Ankh.VSPackage;
 using AnkhSvn_UnitTestProject.Helpers;
 
 namespace AnkhSvn_UnitTestProject.CommandRouting
@@ -33,24 +36,42 @@ namespace AnkhSvn_UnitTestProject.CommandRouting
     [TestFixture]
     public class CommandTests
     {
-        AnkhServiceProvider sp;
+        IAnkhServiceProvider sp;
         CommandMapper cm;
+        IDisposable siteContext;
 
         [SetUp]
         public void SetUp()
         {
-            sp = new AnkhServiceProvider();
+            ServiceProviderHelper.InitAsGlobalServiceProvider();
+
+            // Create the package
+            var package = new AnkhSvnPackage();
+            Assert.IsNotNull(package as IVsPackage, "The object does not implement IVsPackage");
+            sp = package;
 
             object pvar;
             var shell = new Mock<SVsShell>().As<IVsShell>();
             shell.Setup(x => x.GetProperty(It.IsAny<int>(), out pvar)).Returns(-1);
-            sp.AddService(typeof(SVsShell), shell.Object);
+            object falseBox = false;
+            shell.Setup(x => x.GetProperty((int)__VSSPROPID.VSSPROPID_IsInCommandLineMode, out falseBox)).Returns(VSErr.S_OK);
+            const int VSSPROPID_ReleaseVersion = -9068; // VS 12+
+            object version = "14.0";
+            shell.Setup(x => x.GetProperty(VSSPROPID_ReleaseVersion, out version)).Returns(VSErr.S_OK);
+            ServiceProviderHelper.AddService(typeof(SVsShell), shell.Object);
+
+            var vsUIShell = new Mock<SVsUIShell>().As<IVsUIShell>();
+            ServiceProviderHelper.AddService(typeof(SVsUIShell), vsUIShell.Object);
+
+            var dte = new Mock<SDTE>().As<_DTE>();
+            dte.SetupGet(x => x.Version).Returns((string)null);
+            ServiceProviderHelper.AddService(typeof(SDTE), dte.Object);
 
             var state = new Mock<IAnkhCommandStates>();
             state.SetupGet(x => x.SccProviderActive).Returns(true);
             state.SetupGet(x => x.SolutionExists).Returns(true);
 
-            sp.AddService(typeof(IAnkhCommandStates), state.Object);
+            ServiceProviderHelper.AddService(typeof(IAnkhCommandStates), state.Object);
 
             var selection = new Mock<ISelectionContext>();
             selection.Setup(x => x.Cache[It.IsAny<object>()]).Returns(null);
@@ -58,33 +79,37 @@ namespace AnkhSvn_UnitTestProject.CommandRouting
             var rawHandle = new Mock<IVsSccProject2>();
             var p = new SccProject("c:\foo\bar", rawHandle.Object);
             selection.Setup(x => x.GetSelectedProjects(It.IsAny<bool>())).Returns(new[] { p });
-            sp.AddService(typeof(ISelectionContext), selection.Object);
+            ServiceProviderHelper.AddService(typeof(ISelectionContext), selection.Object);
 
+            var regEditors = new Mock<SVsRegisterEditors>().As<IVsRegisterEditors>();
+            ServiceProviderHelper.AddService(typeof(SVsRegisterEditors), regEditors.Object);
 
-            
-
+            var olMgr = new Mock<SOleComponentManager>().As<IOleComponentManager>();
+            ServiceProviderHelper.AddService(typeof(SOleComponentManager), olMgr.Object);
 
             var pcMgr = new Mock<IPendingChangesManager>();
-            sp.AddService(typeof(IPendingChangesManager), pcMgr.Object);
+            ServiceProviderHelper.AddService(typeof(IPendingChangesManager), pcMgr.Object);
 
 
 
             var textMgr = new Mock<SVsTextManager>().As<IVsTextManager>();
-            sp.AddService(typeof(SVsTextManager), textMgr.Object);
+            ServiceProviderHelper.AddService(typeof(SVsTextManager), textMgr.Object);
 
             var selectionMonitor = new Mock<IVsMonitorSelection>();
-            sp.AddService(typeof(IVsMonitorSelection), selectionMonitor.Object);
+            ServiceProviderHelper.AddService(typeof(IVsMonitorSelection), selectionMonitor.Object);
 
+            siteContext = ServiceProviderHelper.SetSite(package);
 
-            var r = new AnkhRuntime(sp);
-            r.AddModule(new AnkhModule(r));
-            r.AddModule(new AnkhSccModule(r));
-            //r.AddModule(new AnkhVSModule(r));
-            r.AddModule(new AnkhUIModule(r));
-            r.AddModule(new AnkhDiffModule(r));
-            r.Start();
+            cm = package.GetService<CommandMapper>();
+        }
 
-            cm = r.GetService<CommandMapper>();
+        [TearDown]
+        public void Cleanup()
+        {
+            siteContext.Dispose();
+            siteContext = null;
+            ServiceProviderHelper.DisposeServices();
+            ServiceProviderHelper.RemoveAsGlobalServiceProvider();
         }
 
         [Test]
@@ -94,12 +119,12 @@ namespace AnkhSvn_UnitTestProject.CommandRouting
             var projInfo = new Mock<ISccProjectInfo>();
             projInfo.SetupGet(x => x.ProjectDirectory).Returns((string)null);
             projMapper.Setup(x => x.GetProjectInfo(It.IsAny<SccProject>())).Returns(projInfo.Object);
-            sp.AddService(typeof(IProjectFileMapper), projMapper.Object);
+            ServiceProviderHelper.AddService(typeof(IProjectFileMapper), projMapper.Object);
 
             // The sln projectroot also returns null
             var slnSettings = new Mock<IAnkhSolutionSettings>();
             slnSettings.SetupGet(x => x.ProjectRoot).Returns((string)null);
-            sp.AddService(typeof(IAnkhSolutionSettings), slnSettings.Object);
+            ServiceProviderHelper.AddService(typeof(IAnkhSolutionSettings), slnSettings.Object);
 
             TestAllCommands();
         }
@@ -109,12 +134,12 @@ namespace AnkhSvn_UnitTestProject.CommandRouting
         {
             var projMapper = new Mock<IProjectFileMapper>();
             projMapper.Setup(x => x.GetProjectInfo(It.IsAny<SccProject>())).Returns((ISccProjectInfo)null);
-            sp.AddService(typeof(IProjectFileMapper), projMapper.Object);
+            ServiceProviderHelper.AddService(typeof(IProjectFileMapper), projMapper.Object);
 
             // sln settings unavailable
             //var slnSettings = new Mock<IAnkhSolutionSettings>();
             //slnSettings.SetupGet(x => x.ProjectRoot).Returns((string)null);
-            //sp.AddService(typeof(IAnkhSolutionSettings), slnSettings.Object);
+            //ServiceProviderHelper.AddService(typeof(IAnkhSolutionSettings), slnSettings.Object);
 
             TestAllCommands();
         }

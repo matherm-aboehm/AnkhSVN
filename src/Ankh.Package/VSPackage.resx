@@ -137,7 +137,8 @@
     <value>Log Messages (AnkhSVN)</value>
   </data>
   <data name="1" xml:space="preserve">
-    <value />
+    <value>IPQMJQPEAJK0EDCHQ3Q3D1M1D0QKAQIPD2A0I9HIREK2JDH0KJECZ1D8MIIDAQR8ZHEHPAKIDAMEKRMQDZPRIPK1EZAHA1MKC9Z3C9ACEIC1I2H8AZKRHMR3HPKJIEHM</value>
+    <comment>PLK recreated by aboehm</comment>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="400" type="System.Resources.ResXFileRef, System.Windows.Forms">

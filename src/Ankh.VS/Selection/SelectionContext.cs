@@ -391,8 +391,9 @@ namespace Ankh.VS.Selection
                         yield return new SelectionItem(hier, items[i].itemid);
                     else
                     {
-                        if (items[i].itemid == VSItemId.Root && MightBeSolutionExplorerSelection)
-                            yield return new SelectionItem((IVsHierarchy)Solution, VSItemId.Root,
+                        if (items[i].itemid == VSItemId.Root && MightBeSolutionExplorerSelection &&
+                            (hier = (IVsHierarchy)Solution) != null)
+                            yield return new SelectionItem(hier, VSItemId.Root,
                                 SelectionUtils.GetSolutionAsSccProject(Context));
                         // else skip
                     }

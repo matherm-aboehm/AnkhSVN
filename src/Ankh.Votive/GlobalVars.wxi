@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Include>
+  <?ifndef ankhVersion ?>
+  <?define ankhVersion=2.0.0.1 ?>
+  <?endif?>
+  <?define ResourceCultureList=de?>
+</Include>

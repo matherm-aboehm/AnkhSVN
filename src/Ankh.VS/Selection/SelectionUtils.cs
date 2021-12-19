@@ -394,7 +394,9 @@ namespace Ankh.VS.Selection
                 sccService.GetSccGlyph(1, rgpszFullPaths, rgsiGlyphs, rgdwSccStatus);
 
                 // Set the solution's glyph directly in the hierarchy
+#pragma warning disable VSSDK006 // Check services exist
                 IVsHierarchy solHier = (IVsHierarchy)_context.GetService(typeof(SVsSolution));
+#pragma warning restore VSSDK006 // Check services exist
                 return solHier.SetProperty(VSItemId.Root, (int)__VSHPROPID.VSHPROPID_StateIconIndex, (int)rgsiGlyphs[0]);
             }
 

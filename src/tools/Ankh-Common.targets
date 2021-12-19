@@ -59,6 +59,7 @@
     <!-- Visual Studio 2010 (SP1) SDK -->
     <MsVsShellAssembly>Microsoft.VisualStudio.Shell.10.0</MsVsShellAssembly>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition="'$(LatestTargetFramework)' == 'true'">v4.8</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(UseVsSdkVersion)' &gt;= '11.0'">
     <MsVsShellAssembly>Microsoft.VisualStudio.Shell.$(UseVsSdkVersion)</MsVsShellAssembly>
@@ -68,8 +69,9 @@
     <TargetFrameworkVersion Condition="'$(UseVsSdkVersion)' &gt;= '14.0'">v4.5.2</TargetFrameworkVersion>
     <TargetFrameworkVersion Condition="'$(UseVsSdkVersion)' &gt;= '15.0'">v4.6</TargetFrameworkVersion>
     <TargetFrameworkVersion Condition="'$(UseVsSdkVersion)' &gt;= '16.0'">v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition="'$(LatestTargetFramework)' == 'true'">v4.8</TargetFrameworkVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(UseVsSdkVersion)' &gt;= '15.0'">
+  <PropertyGroup Condition="'$(VisualStudioVersion)' &gt;= '15.0'">
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <NoPackageReferences>false</NoPackageReferences>
   </PropertyGroup>
@@ -86,6 +88,6 @@
   <PropertyGroup>
     <PlatformTarget Condition="'$(UseVsSdkVersion)' &lt; '17.0'">x86</PlatformTarget>
     <PlatformTarget Condition="'$(UseVsSdkVersion)' &gt;= '17.0'">x64</PlatformTarget>
-	<LangVersion>7</LangVersion>
+    <LangVersion>7</LangVersion>
   </PropertyGroup>
 </Project>

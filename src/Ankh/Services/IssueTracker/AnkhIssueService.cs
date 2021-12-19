@@ -423,6 +423,12 @@ namespace Ankh.Services.IssueTracker
                         OnSvnItemChanged(pc.SvnItem);
                     }
                     break;
+                case CollectionChange.Remove:
+                    foreach (PendingChange pc in e.OldItems)
+                    {
+                        OnSvnItemChanged(pc.SvnItem);
+                    }
+                    break;
                 case CollectionChange.Reset:
                     foreach (PendingChange pc in Manager.PendingChanges)
                     {

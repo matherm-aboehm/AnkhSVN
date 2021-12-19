@@ -37,6 +37,7 @@ using Ankh.Scc;
 using NUnit.Framework;
 using Moq;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.OLE.Interop;
 
@@ -61,16 +62,25 @@ namespace UnitTestProject
         [Test]
         public void SetSite()
         {
+            ServiceProviderHelper.InitAsGlobalServiceProvider();
+
             // Create the package
             IVsPackage package = new AnkhSvnPackage() as IVsPackage;
             Assert.IsNotNull(package, "The object does not implement IVsPackage");
-            
+
             var statusCache = new Mock<ISvnStatusCache>();
             var regEditors = new Mock<SVsRegisterEditors>().As<IVsRegisterEditors>();
-            
+
             var vsShell = new Mock<SVsShell>().As<IVsShell>();
-            object r = @"SOFTWARE\Microsoft\VisualStudio\8.0";
+            object r = @"SOFTWARE\Microsoft\VisualStudio\14.0";
             vsShell.Setup(x => x.GetProperty((int)__VSSPROPID.VSSPROPID_VirtualRegistryRoot, out r)).Returns(VSErr.S_OK);
+            object falseBox = false;
+            vsShell.Setup(x => x.GetProperty((int)__VSSPROPID.VSSPROPID_IsInCommandLineMode, out falseBox)).Returns(VSErr.S_OK);
+            const int VSSPROPID_ReleaseVersion = -9068; // VS 12+
+            object version = "14.0";
+            vsShell.Setup(x => x.GetProperty(VSSPROPID_ReleaseVersion, out version)).Returns(VSErr.S_OK);
+
+            var vsUIShell = new Mock<SVsUIShell>().As<IVsUIShell>();
 
             var vsTextMgr = new Mock<SVsTextManager>().As<IVsTextManager>();
 
@@ -80,17 +90,27 @@ namespace UnitTestProject
 
             var outputWindow = new Mock<SVsOutputWindow>().As<IVsOutputWindow>();
 
-            using (ServiceProviderHelper.AddService(typeof(SVsOutputWindow), outputWindow.Object))
-            using (ServiceProviderHelper.AddService(typeof(SOleComponentManager), olMgr.Object))
-            using (ServiceProviderHelper.AddService(typeof(IVsMonitorSelection), monitorSelection.Object))
-            using (ServiceProviderHelper.AddService(typeof(SVsTextManager), vsTextMgr.Object))
-            using (ServiceProviderHelper.AddService(typeof(SVsShell), vsShell.Object))
-            using (ServiceProviderHelper.AddService(typeof(SVsRegisterEditors), regEditors.Object))
-            using (ServiceProviderHelper.AddService(typeof(ISvnStatusCache), statusCache.Object))
-            using (ServiceProviderHelper.SetSite(package))
+            var dte = new Mock<SDTE>().As<_DTE>();
+            dte.SetupGet(x => x.Version).Returns((string)null);
+
+            try
             {
-                // Unsite the package
-                Assert.AreEqual(0, package.SetSite(null), "SetSite(null) did not return S_OK");
+                using (ServiceProviderHelper.AddService(typeof(SVsOutputWindow), outputWindow.Object))
+                using (ServiceProviderHelper.AddService(typeof(SOleComponentManager), olMgr.Object))
+                using (ServiceProviderHelper.AddService(typeof(IVsMonitorSelection), monitorSelection.Object))
+                using (ServiceProviderHelper.AddService(typeof(SVsTextManager), vsTextMgr.Object))
+                using (ServiceProviderHelper.AddService(typeof(SVsShell), vsShell.Object))
+                using (ServiceProviderHelper.AddService(typeof(SVsUIShell), vsUIShell.Object))
+                using (ServiceProviderHelper.AddService(typeof(SVsRegisterEditors), regEditors.Object))
+                using (ServiceProviderHelper.AddService(typeof(ISvnStatusCache), statusCache.Object))
+                using (ServiceProviderHelper.AddService(typeof(SDTE), dte.Object))
+                using (ServiceProviderHelper.SetSite(package))
+                { }
+            }
+            finally
+            {
+                ServiceProviderHelper.DisposeServices();
+                ServiceProviderHelper.RemoveAsGlobalServiceProvider();
             }
         }
     }

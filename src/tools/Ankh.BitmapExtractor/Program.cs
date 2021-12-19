@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Reflection;
+using System.Globalization;
 using Microsoft.VisualStudio.CommandTable;
 
 namespace Ankh.BitmapExtractor
@@ -77,7 +78,7 @@ namespace Ankh.BitmapExtractor
             try
             {
                 if (asm != null
-                    ? !table.Read(Assembly.LoadFile(from), new ReadErrorHandler())
+                    ? !table.Read(asm, new ReadErrorHandler())
                     : !table.Read(from, new ReadErrorHandler()))
                 {
                     Console.Error.WriteLine("* Loading failed, exiting *");
@@ -119,7 +120,8 @@ namespace Ankh.BitmapExtractor
                         continue;
 
                     Bitmap bm = bitmaps.GetBitmap(cb.IconGID, cb.IconIndex);
-                    string name = cb.CanonicalName.Trim(' ', '.', '\t', '&').Replace(" ", "").Replace("&", "");
+                    string name = cb.GetText(StringSetIndices.Canonical, CultureInfo.CurrentCulture);
+                    name = name.Trim(' ', '.', '\t', '&').Replace(" ", "").Replace("&", "");
 
                     if (bm == null)
                     {

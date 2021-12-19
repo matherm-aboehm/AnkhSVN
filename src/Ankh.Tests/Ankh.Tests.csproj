@@ -1,6 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <LatestTargetFramework>true</LatestTargetFramework>
+  </PropertyGroup>
   <Import Project="../tools/Ankh-Common.targets" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -12,20 +15,22 @@
     <RootNamespace>Ankh.Tests</RootNamespace>
     <DelaySign>false</DelaySign>
     <OutputType>Library</OutputType>
-    <SccProjectName>
-    </SccProjectName>
-    <SccLocalPath>
-    </SccLocalPath>
-    <SccAuxPath>
-    </SccAuxPath>
-    <SccProvider>
-    </SccProvider>
   </PropertyGroup>
+  <!--PropertyGroup Condition="'$(VisualStudioVersion)' &lt;= '14.0'">
+    <VSCOMNTOOLSVar>VS$(UseVsSdkVersion.Replace('.', ''))COMNTOOLS</VSCOMNTOOLSVar>
+    <VSCOMNTOOLSPath>$([System.Environment]::ExpandEnvironmentVariables('%$(VSCOMNTOOLSVar)%'))</VSCOMNTOOLSPath>
+    <ReferencePath>$(VSCOMNTOOLSPath)..\IDE\PrivateAssemblies;$(VSCOMNTOOLSPath)..\IDE\PublicAssemblies</ReferencePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(VisualStudioVersion)' &gt;= '15.0'">
+    <VSIDEPath Condition="'$(VsInstallRoot)' != ''">$([System.IO.Path]::Combine('$(VsInstallRoot.TrimEnd('\'))', 'Common7', 'IDE'))\</VSIDEPath>
+    <ReferencePath>$(VSIDEPath)PrivateAssemblies;$(VSIDEPath)PublicAssemblies</ReferencePath>
+  </PropertyGroup-->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
+    <LangVersion>3</LangVersion>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
@@ -35,6 +40,7 @@
     <Optimize>true</Optimize>
     <FileAlignment>4096</FileAlignment>
     <DebugType>pdbonly</DebugType>
+    <LangVersion>3</LangVersion>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
@@ -103,6 +109,9 @@
   <ItemGroup>
     <PackageReference Include="NUnit">
       <Version>3.13.2</Version>
+    </PackageReference>
+    <PackageReference Include="NUnit3TestAdapter">
+      <Version>4.2.1</Version>
     </PackageReference>
     <PackageReference Include="RhinoMocks">
       <Version>3.6.1</Version>

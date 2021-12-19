@@ -12,6 +12,9 @@
       <Component Id="C_Ankh.ExtensionPoints.dll" Guid="173DFEC9-E396-4884-94EE-127D4C7D1D20">
         <!-- CF_[assemblyname].dll is used in ProvideAnkhExtensionRedirectAttribute and Ankh.ExtensionReg.wxi -->
         <File Id="CF_Ankh.ExtensionPoints.dll" Name="Ankh.ExtensionPoints.dll" Checksum="yes" KeyPath="yes" />
+        <?ifdef Ankh_Pdb?>
+        <File Id="CF_Ankh.ExtensionPoints.pdb" Name="Ankh.ExtensionPoints.pdb" Checksum="yes" Vital="yes" />
+        <?endif?>
       </Component>
       <Component Id="C_Ankh.ExtensionPoints.xml" Guid="755CDB02-E44B-4FD4-B926-52D737A1FD28">
         <File Id="CF_Ankh.ExtensionPoints.xml" Name="Ankh.ExtensionPoints.xml" KeyPath="yes"/>

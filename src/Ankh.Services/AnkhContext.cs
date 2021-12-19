@@ -30,15 +30,11 @@ namespace Ankh
     /// <remarks>Members should only be added for the most common operations. Everything else should be handled via the <see cref="IAnkhServiceProvider"/> methods</remarks>
     public sealed class AnkhContext : AnkhService, IAnkhServiceProvider
     {
-        readonly IAnkhServiceProvider _runtime;
-
         AnkhContext(IAnkhServiceProvider context)
             : base(context)
         {
             if (context == null)
                 throw new ArgumentNullException("context");
-
-            _runtime = GetService<AnkhRuntime>();
         }
 
         /// <summary>

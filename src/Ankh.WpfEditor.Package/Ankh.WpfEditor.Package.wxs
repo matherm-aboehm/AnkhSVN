@@ -11,7 +11,10 @@
     <DirectoryRef Id="APP_bin" FileSource="$(sys.SOURCEFILEDIR)bin\$(var.Configuration)">
       <Component Id="C_Ankh.WpfEditor.Package.dll" Guid="89B5BD49-F226-481F-9A29-7BF813D270D5">
         <!-- File must be called File_$(Ankh.WpfEditor.Package.TargetName).dll for the following includes-->
-        <File Id="File_Ankh.WpfEditor.Package.dll" Name="Ankh.WpfEditor.Package.dll" Checksum="yes" KeyPath="yes" />
+        <File Id="File_Ankh.WpfEditor.Package.dll" Name="Ankh.WpfEditor.Package.dll" Checksum="yes" Vital="yes" KeyPath="yes" />
+        <?ifdef Ankh_Pdb?>
+        <File Id="File_Ankh.WpfEditor.Package.pdb" Name="Ankh.WpfEditor.Package.pdb" Checksum="yes" Vital="yes" />
+        <?endif?>
       </Component>
       <Component Id="CR_PkgWpf_2010" Guid="C953E5E1-A952-4E15-A4A7-A6ACBE713FE6">
         <RegistryValue Root="HKLM" Key="Software\AnkhSVN\AnkhSVN\Installation\2.0" Name="PkgWpf-VS2010" Value="1" Type="integer" KeyPath="yes" />

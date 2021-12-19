@@ -16,10 +16,11 @@
     <SccProvider>SubversionScc</SccProvider>
     <SccAuxPath>Svn</SccAuxPath>
     <SccLocalPath>Svn</SccLocalPath>
+    <RunWixToolsOutOfProc>true</RunWixToolsOutOfProc>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <Cultures>en-US</Cultures>
-    <DefineConstants>Debug;SharpSvn_NoXml=yes;SharpGit_NoXml=yes;SharpGit_NoSvnLicenses=yes</DefineConstants>
+    <Cultures></Cultures>
+    <DefineConstants>Debug;SharpSvn_NoXml=yes;SharpGit_NoXml=yes;SharpGit_NoSvnLicenses=yes;SharpSvn_Pdb;Ankh_Pdb;SharpGit_Pdb</DefineConstants>
     <LeaveTemporaryFiles>False</LeaveTemporaryFiles>
     <LibBindFiles>False</LibBindFiles>
     <OutputPath>Ankh.Votive\bin\$(Configuration)\</OutputPath>
@@ -40,8 +41,8 @@
     </LinkerAdditionalOptions>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <Cultures>en-US</Cultures>
-    <DefineConstants>SharpSvn_NoXml=yes;SharpGit_NoXml=yes;SharpGit_NoSvnLicenses=yes</DefineConstants>
+    <Cultures></Cultures>
+    <DefineConstants>SharpSvn_NoXml=yes;SharpGit_NoXml=yes;SharpGit_NoSvnLicenses=yes;SharpSvn_Pdb;Ankh_Pdb;SharpGit_Pdb</DefineConstants>
     <LeaveTemporaryFiles>False</LeaveTemporaryFiles>
     <LibBindFiles>False</LibBindFiles>
     <OutputPath>Ankh.Votive\bin\$(Configuration)\</OutputPath>
@@ -49,7 +50,7 @@
     <SuppressPdbOutput>False</SuppressPdbOutput>
     <SuppressSpecificWarnings>1080;1055</SuppressSpecificWarnings>
     <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-    <VerboseOutput>False</VerboseOutput>
+    <VerboseOutput>True</VerboseOutput>
     <WixVariables>
     </WixVariables>
     <SuppressAllWarnings>False</SuppressAllWarnings>
@@ -76,7 +77,7 @@
     <Compile Include="Ankh.VS.VersionThunk\Ankh.VS.VersionThunk.wxs" />
     <Compile Include="Ankh.VS.WpfServices\Ankh.VS.WpfServices.wxs" />
     <Compile Include="Ankh.VS\Ankh.VS.wxs" />
-    <Compile Include="Ankh.WpfEditor.Package\Ankh.WpfEditor.Package.wxs" />
+    <Compile Include="Ankh.WpfEditor.Package\Ankh.WpfEditor.Package.wxs" Condition="'$(UseVsSdkVersion)' &gt;= '10.0'" />
     <Compile Include="Ankh.WpfUI\Ankh.WpfUI.wxs" />
     <Compile Include="Ankh\Ankh.wxs" />
     <Compile Include="Ankh.Votive\Ankh.Votive.wxs" />
@@ -195,7 +196,7 @@
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
     </ProjectReference>
-    <ProjectReference Include="Ankh.WpfEditor.Package\Ankh.WpfEditor.Package.csproj">
+    <ProjectReference Include="Ankh.WpfEditor.Package\Ankh.WpfEditor.Package.csproj" Condition="'$(UseVsSdkVersion)' &gt;= '10.0'">
       <Name>Ankh.WpfEditor.Package</Name>
       <Project>{d3ffd86d-b2ac-4659-86dd-559e42844bd0}</Project>
       <Private>True</Private>
@@ -243,10 +244,15 @@
   <ItemGroup>
     <Content Include="Ankh.Votive\AnkhSVN-Icon.png" />
     <Content Include="Ankh.Votive\AnkhSVN-Preview.png" />
+    <Content Include="Ankh.Votive\GlobalVars.wxi" />
     <Content Include="Ankh.Votive\SetupHeader.bmp" />
     <Content Include="Ankh.Votive\SetupHeader.pdn" />
     <Content Include="Ankh.Votive\SetupPage.bmp" />
     <Content Include="Ankh.Votive\SetupPage.pdn" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Ankh.Votive\de-DE.wxl" />
+    <EmbeddedResource Include="Ankh.Votive\en-US.wxl" />
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(ImportVsSdkVersion)\VSSDK\Microsoft.VsSDK.targets" Condition="$(ImportVsSdkVersion) != '8.0'" />
@@ -259,39 +265,45 @@
   </PropertyGroup>
   <Target Name="AddVersionDefines" DependsOnTargets="FindSDKInstallation;AddProjectReferenceDefineConstants">
     <GetAssemblyIdentity AssemblyFiles="Ankh.ExtensionPoints\bin\$(Configuration)\Ankh.ExtensionPoints.dll">
-      <Output TaskParameter="Assemblies" ItemName="MyVersionAssembly" />
+      <Output TaskParameter="Assemblies" ItemName="ExtensionPointsAssembly" />
     </GetAssemblyIdentity>
-    <Message Text="Generating ExtensionPoints redirects for version %(MyVersionAssembly.Version)" Importance="High" />
-    <CreateProperty Value="$(ProjectDefineConstants);AnkhExtensionPointsVersion=%(MyVersionAssembly.Version)">
+    <GetAssemblyIdentity AssemblyFiles="Ankh.Package\bin\$(Configuration)\Ankh.Package.dll">
+      <Output TaskParameter="Assemblies" ItemName="PackageAssembly" />
+    </GetAssemblyIdentity>
+    <Message Text="Generating ExtensionPoints redirects for version %(ExtensionPointsAssembly.Version)" Importance="High" />
+    <CreateProperty Value="$(ProjectDefineConstants);AnkhExtensionPointsVersion=%(ExtensionPointsAssembly.Version)">
+      <Output TaskParameter="Value" PropertyName="ProjectDefineConstants" />
+    </CreateProperty>
+    <CreateProperty Value="$(ProjectDefineConstants);ankhVersion=%(PackageAssembly.Version)">
       <Output TaskParameter="Value" PropertyName="ProjectDefineConstants" />
     </CreateProperty>
     <Exec Command="tools\Ankh.GenPkgDef\bin\$(Configuration)\Ankh.GenPkgDef.exe Ankh.pkgdef Ankh.Package\bin\$(Configuration)\Ankh.Package.dll" />
     <Exec Command="tools\Ankh.GenerateVSIXManifest\bin\$(Configuration)\Ankh.GenerateVSIXManifest.exe extension.VsixManifest" />
     <Exec Command="tools\Ankh.GenerateVSIXManifest\bin\$(Configuration)\Ankh.GenerateVSIXManifest.exe -v10 extension.VsixManifest-vs2010" />
-    <Exec Condition="'$(UseVS2005MPF)' == ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\8.0 &quot;Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-2005.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(UseVS2005MPF)' == ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\9.0 &quot;Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-2008.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(UseVS2005MPF)' == ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\10.0 &quot;Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-2010.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(UseVS2005MPF)' == ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\11.0 &quot;Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-2012.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(UseVS2005MPF)' == ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\12.0 &quot;Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-12.0.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(UseVS2005MPF)' == ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\14.0 &quot;Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-14.0.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(UseVS2005MPF)' == ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\15.0 &quot;Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-15.0.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(UseVS2005MPF)' != ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\VS2005\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\8.0 &quot;Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-2005.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(UseVS2005MPF)' != ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\VS2005\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\9.0 &quot;Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-2008.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(UseVS2005MPF)' != ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\VS2005\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\10.0 &quot;Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-2010.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(UseVS2005MPF)' != ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\VS2005\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\11.0 &quot;Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-2012.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(UseVS2005MPF)' != ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\VS2005\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\12.0 &quot;Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-12.0.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(UseVS2005MPF)' != ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\VS2005\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\14.0 &quot;Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-14.0.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(UseVS2005MPF)' != ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\VS2005\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\15.0 &quot;Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-15.0.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(WpfRegPkg)' == ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\10.0 &quot;Ankh.WpfEditor.Package\bin\$(Configuration)\Ankh.WpfEditor.Package.dll&quot; &quot;/wixfile:Ankh.WpfEditor.Package\obj\Ankh.WpfEditor.Package-2010.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(WpfRegPkg)' == ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\11.0 &quot;Ankh.WpfEditor.Package\bin\$(Configuration)\Ankh.WpfEditor.Package.dll&quot; &quot;/wixfile:Ankh.WpfEditor.Package\obj\Ankh.WpfEditor.Package-2012.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(WpfRegPkg)' == ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\12.0 &quot;Ankh.WpfEditor.Package\bin\$(Configuration)\Ankh.WpfEditor.Package.dll&quot; &quot;/wixfile:Ankh.WpfEditor.Package\obj\Ankh.WpfEditor.Package-12.0.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(WpfRegPkg)' == ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\14.0 &quot;Ankh.WpfEditor.Package\bin\$(Configuration)\Ankh.WpfEditor.Package.dll&quot; &quot;/wixfile:Ankh.WpfEditor.Package\obj\Ankh.WpfEditor.Package-14.0.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(WpfRegPkg)' == ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\15.0 &quot;Ankh.WpfEditor.Package\bin\$(Configuration)\Ankh.WpfEditor.Package.dll&quot; &quot;/wixfile:Ankh.WpfEditor.Package\obj\Ankh.WpfEditor.Package-15.0.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(WpfRegPkg)' != ''" Command="&quot;$(WpfRegPkg)&quot; /root:Software\Microsoft\VisualStudio\10.0 &quot;Ankh.WpfEditor.Package\bin\$(Configuration)\Ankh.WpfEditor.Package.dll&quot; &quot;/wixfile:Ankh.WpfEditor.Package\obj\Ankh.WpfEditor.Package-2010.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(WpfRegPkg)' != ''" Command="&quot;$(WpfRegPkg)&quot; /root:Software\Microsoft\VisualStudio\11.0 &quot;Ankh.WpfEditor.Package\bin\$(Configuration)\Ankh.WpfEditor.Package.dll&quot; &quot;/wixfile:Ankh.WpfEditor.Package\obj\Ankh.WpfEditor.Package-2012.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(WpfRegPkg)' != ''" Command="&quot;$(WpfRegPkg)&quot; /root:Software\Microsoft\VisualStudio\12.0 &quot;Ankh.WpfEditor.Package\bin\$(Configuration)\Ankh.WpfEditor.Package.dll&quot; &quot;/wixfile:Ankh.WpfEditor.Package\obj\Ankh.WpfEditor.Package-12.0.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(WpfRegPkg)' != ''" Command="&quot;$(WpfRegPkg)&quot; /root:Software\Microsoft\VisualStudio\14.0 &quot;Ankh.WpfEditor.Package\bin\$(Configuration)\Ankh.WpfEditor.Package.dll&quot; &quot;/wixfile:Ankh.WpfEditor.Package\obj\Ankh.WpfEditor.Package-14.0.wxi&quot; /codebase &gt; nul:" />
-    <Exec Condition="'$(WpfRegPkg)' != ''" Command="&quot;$(WpfRegPkg)&quot; /root:Software\Microsoft\VisualStudio\15.0 &quot;Ankh.WpfEditor.Package\bin\$(Configuration)\Ankh.WpfEditor.Package.dll&quot; &quot;/wixfile:Ankh.WpfEditor.Package\obj\Ankh.WpfEditor.Package-15.0.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(UseVS2005MPF)' == ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\8.0 &quot;$(SolutionDir)Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-2005.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(UseVS2005MPF)' == ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\9.0 &quot;$(SolutionDir)Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-2008.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(UseVS2005MPF)' == ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\10.0 &quot;$(SolutionDir)Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-2010.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(UseVS2005MPF)' == ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\11.0 &quot;$(SolutionDir)Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-2012.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(UseVS2005MPF)' == ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\12.0 &quot;$(SolutionDir)Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-12.0.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(UseVS2005MPF)' == ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\14.0 &quot;$(SolutionDir)Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-14.0.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(UseVS2005MPF)' == ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\15.0 &quot;$(SolutionDir)Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-15.0.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(UseVS2005MPF)' != ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\VS2005\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\8.0 &quot;$(SolutionDir)Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-2005.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(UseVS2005MPF)' != ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\VS2005\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\9.0 &quot;$(SolutionDir)Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-2008.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(UseVS2005MPF)' != ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\VS2005\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\10.0 &quot;$(SolutionDir)Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-2010.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(UseVS2005MPF)' != ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\VS2005\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\11.0 &quot;$(SolutionDir)Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-2012.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(UseVS2005MPF)' != ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\VS2005\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\12.0 &quot;$(SolutionDir)Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-12.0.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(UseVS2005MPF)' != ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\VS2005\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\14.0 &quot;$(SolutionDir)Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-14.0.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(UseVS2005MPF)' != ''" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\VS2005\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\15.0 &quot;$(SolutionDir)Ankh.Package\bin\$(Configuration)\Ankh.Package.dll&quot; &quot;/wixfile:Ankh.Package\obj\Ankh.Package-15.0.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(WpfRegPkg)' == '' and '$(UseVsSdkVersion)' &gt;= '10.0'" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\10.0 &quot;$(SolutionDir)Ankh.WpfEditor.Package\bin\$(Configuration)\Ankh.WpfEditor.Package.dll&quot; &quot;/wixfile:Ankh.WpfEditor.Package\obj\Ankh.WpfEditor.Package-2010.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(WpfRegPkg)' == '' and '$(UseVsSdkVersion)' &gt;= '10.0'" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\11.0 &quot;$(SolutionDir)Ankh.WpfEditor.Package\bin\$(Configuration)\Ankh.WpfEditor.Package.dll&quot; &quot;/wixfile:Ankh.WpfEditor.Package\obj\Ankh.WpfEditor.Package-2012.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(WpfRegPkg)' == '' and '$(UseVsSdkVersion)' &gt;= '10.0'" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\12.0 &quot;$(SolutionDir)Ankh.WpfEditor.Package\bin\$(Configuration)\Ankh.WpfEditor.Package.dll&quot; &quot;/wixfile:Ankh.WpfEditor.Package\obj\Ankh.WpfEditor.Package-12.0.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(WpfRegPkg)' == '' and '$(UseVsSdkVersion)' &gt;= '10.0'" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\14.0 &quot;$(SolutionDir)Ankh.WpfEditor.Package\bin\$(Configuration)\Ankh.WpfEditor.Package.dll&quot; &quot;/wixfile:Ankh.WpfEditor.Package\obj\Ankh.WpfEditor.Package-14.0.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(WpfRegPkg)' == '' and '$(UseVsSdkVersion)' &gt;= '10.0'" Command="&quot;$(VsSDKInstall)VisualStudioIntegration\Tools\Bin\RegPkg.exe&quot; /root:Software\Microsoft\VisualStudio\15.0 &quot;$(SolutionDir)Ankh.WpfEditor.Package\bin\$(Configuration)\Ankh.WpfEditor.Package.dll&quot; &quot;/wixfile:Ankh.WpfEditor.Package\obj\Ankh.WpfEditor.Package-15.0.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(WpfRegPkg)' != '' and '$(UseVsSdkVersion)' &gt;= '10.0'" Command="&quot;$(WpfRegPkg)&quot; /root:Software\Microsoft\VisualStudio\10.0 &quot;$(SolutionDir)Ankh.WpfEditor.Package\bin\$(Configuration)\Ankh.WpfEditor.Package.dll&quot; &quot;/wixfile:Ankh.WpfEditor.Package\obj\Ankh.WpfEditor.Package-2010.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(WpfRegPkg)' != '' and '$(UseVsSdkVersion)' &gt;= '10.0'" Command="&quot;$(WpfRegPkg)&quot; /root:Software\Microsoft\VisualStudio\11.0 &quot;$(SolutionDir)Ankh.WpfEditor.Package\bin\$(Configuration)\Ankh.WpfEditor.Package.dll&quot; &quot;/wixfile:Ankh.WpfEditor.Package\obj\Ankh.WpfEditor.Package-2012.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(WpfRegPkg)' != '' and '$(UseVsSdkVersion)' &gt;= '10.0'" Command="&quot;$(WpfRegPkg)&quot; /root:Software\Microsoft\VisualStudio\12.0 &quot;$(SolutionDir)Ankh.WpfEditor.Package\bin\$(Configuration)\Ankh.WpfEditor.Package.dll&quot; &quot;/wixfile:Ankh.WpfEditor.Package\obj\Ankh.WpfEditor.Package-12.0.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(WpfRegPkg)' != '' and '$(UseVsSdkVersion)' &gt;= '10.0'" Command="&quot;$(WpfRegPkg)&quot; /root:Software\Microsoft\VisualStudio\14.0 &quot;$(SolutionDir)Ankh.WpfEditor.Package\bin\$(Configuration)\Ankh.WpfEditor.Package.dll&quot; &quot;/wixfile:Ankh.WpfEditor.Package\obj\Ankh.WpfEditor.Package-14.0.wxi&quot; /codebase &gt; nul:" />
+    <Exec Condition="'$(WpfRegPkg)' != '' and '$(UseVsSdkVersion)' &gt;= '10.0'" Command="&quot;$(WpfRegPkg)&quot; /root:Software\Microsoft\VisualStudio\15.0 &quot;$(SolutionDir)Ankh.WpfEditor.Package\bin\$(Configuration)\Ankh.WpfEditor.Package.dll&quot; &quot;/wixfile:Ankh.WpfEditor.Package\obj\Ankh.WpfEditor.Package-15.0.wxi&quot; /codebase &gt; nul:" />
   </Target>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.

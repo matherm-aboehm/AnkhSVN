@@ -37,7 +37,9 @@ namespace Ankh.UI.Controls
             _container.ControlAdded += new System.Windows.Forms.ControlEventHandler(OnPanelAdded);
             _container.ControlRemoved += new System.Windows.Forms.ControlEventHandler(OnControlRemoved);
 
+#pragma warning disable VSSDK006 // Check services exist
             _designerHost = (IDesignerHost)component.Site.GetService(typeof(IDesignerHost));
+#pragma warning restore VSSDK006 // Check services exist
         }
 
 

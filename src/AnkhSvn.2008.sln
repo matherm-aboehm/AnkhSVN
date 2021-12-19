@@ -67,12 +67,19 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ankh.DotNet2Test", "tools\A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ankh.VS.Interop", "Ankh.VS.Interop\Ankh.VS.Interop.csproj", "{B99CB919-1A2C-4E3B-9C15-8789B358EA99}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ankh.BitmapExtractor", "tools\Ankh.BitmapExtractor\Ankh.BitmapExtractor.csproj", "{57CCA941-C302-4A48-B9F9-EB3AEFF4349E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ankh.WpfEditor.Package", "Ankh.WpfEditor.Package\Ankh.WpfEditor.Package.csproj", "{D3FFD86D-B2AC-4659-86DD-559E42844BD0}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ankh.Chocolatey", "tools\Ankh.Chocolatey\Ankh.Chocolatey.csproj", "{F62A4BC3-009D-4072-89F4-CDE1D0660791}"
 EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
 		Manager = AnkhSVN - Subversion Support for Visual Studio
+	EndGlobalSection
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = AnkhSvn.2008.vsmdi
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -186,6 +193,15 @@ Global
 		{B99CB919-1A2C-4E3B-9C15-8789B358EA99}.Release (With MSI)|x86.Build.0 = Release|x86
 		{B99CB919-1A2C-4E3B-9C15-8789B358EA99}.Release|x86.ActiveCfg = Release|x86
 		{B99CB919-1A2C-4E3B-9C15-8789B358EA99}.Release|x86.Build.0 = Release|x86
+		{57CCA941-C302-4A48-B9F9-EB3AEFF4349E}.Debug|x86.ActiveCfg = Debug|x86
+		{57CCA941-C302-4A48-B9F9-EB3AEFF4349E}.Debug|x86.Build.0 = Debug|x86
+		{57CCA941-C302-4A48-B9F9-EB3AEFF4349E}.Release (With MSI)|x86.ActiveCfg = Release|x86
+		{57CCA941-C302-4A48-B9F9-EB3AEFF4349E}.Release (With MSI)|x86.Build.0 = Release|x86
+		{57CCA941-C302-4A48-B9F9-EB3AEFF4349E}.Release|x86.ActiveCfg = Release|x86
+		{57CCA941-C302-4A48-B9F9-EB3AEFF4349E}.Release|x86.Build.0 = Release|x86
+		{D3FFD86D-B2AC-4659-86DD-559E42844BD0}.Debug|x86.ActiveCfg = Debug|x86
+		{D3FFD86D-B2AC-4659-86DD-559E42844BD0}.Release (With MSI)|x86.ActiveCfg = Release|x86
+		{D3FFD86D-B2AC-4659-86DD-559E42844BD0}.Release|x86.ActiveCfg = Release|x86
 		{F62A4BC3-009D-4072-89F4-CDE1D0660791}.Debug|x86.ActiveCfg = Debug|x86
 		{F62A4BC3-009D-4072-89F4-CDE1D0660791}.Debug|x86.Build.0 = Debug|x86
 		{F62A4BC3-009D-4072-89F4-CDE1D0660791}.Release (With MSI)|x86.ActiveCfg = Release|x86

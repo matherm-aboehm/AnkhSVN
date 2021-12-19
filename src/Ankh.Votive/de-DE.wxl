@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="de-de" Codepage="1252" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+	<String Id="Invariant">de</String>
+  <String Id="LCID">1031</String>
+  <String Id="SummaryCodepage">1252</String>
+</WixLocalization>

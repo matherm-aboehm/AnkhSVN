@@ -52,6 +52,8 @@ namespace UnitTestProject.MenuItemTests
         [SetUp]
         public void SetUp()
         {
+            ServiceProviderHelper.InitAsGlobalServiceProvider();
+
             // Create the package
             package = new AnkhSvnPackage();
 
@@ -59,8 +61,15 @@ namespace UnitTestProject.MenuItemTests
             var regEditors = new Mock<SVsRegisterEditors>().As<IVsRegisterEditors>();
 
             var vsShell = new Mock<SVsShell>().As<IVsShell>();
-            object r = @"SOFTWARE\Microsoft\VisualStudio\8.0";
+            object r = @"SOFTWARE\Microsoft\VisualStudio\14.0";
             vsShell.Setup(x => x.GetProperty((int)__VSSPROPID.VSSPROPID_VirtualRegistryRoot, out r)).Returns(VSErr.S_OK);
+            object falseBox = false;
+            vsShell.Setup(x => x.GetProperty((int)__VSSPROPID.VSSPROPID_IsInCommandLineMode, out falseBox)).Returns(VSErr.S_OK);
+            const int VSSPROPID_ReleaseVersion = -9068; // VS 12+
+            object version = "14.0";
+            vsShell.Setup(x => x.GetProperty(VSSPROPID_ReleaseVersion, out version)).Returns(VSErr.S_OK);
+
+            var vsUIShell = new Mock<SVsUIShell>().As<IVsUIShell>();
 
             var vsTextMgr = new Mock<SVsTextManager>().As<IVsTextManager>();
 
@@ -70,14 +79,19 @@ namespace UnitTestProject.MenuItemTests
 
             var outputWindow = new Mock<SVsOutputWindow>().As<IVsOutputWindow>();
 
+            var dte = new Mock<SDTE>().As<_DTE>();
+            dte.SetupGet(x => x.Version).Returns((string)null);
+
             ServiceProviderHelper.AddService(typeof(IAnkhPackage), package);
             ServiceProviderHelper.AddService(typeof(SVsOutputWindow), outputWindow.Object);
             ServiceProviderHelper.AddService(typeof(SOleComponentManager), olMgr.Object);
             ServiceProviderHelper.AddService(typeof(IVsMonitorSelection), monitorSelection.Object);
             ServiceProviderHelper.AddService(typeof(SVsTextManager), vsTextMgr.Object);
             ServiceProviderHelper.AddService(typeof(SVsShell), vsShell.Object);
+            ServiceProviderHelper.AddService(typeof(SVsUIShell), vsUIShell.Object);
             ServiceProviderHelper.AddService(typeof(SVsRegisterEditors), regEditors.Object);
             ServiceProviderHelper.AddService(typeof(ISvnStatusCache), statusCache.Object);
+            ServiceProviderHelper.AddService(typeof(SDTE), dte.Object);
 
             var uiService = new Mock<IUIService>();
             uiService.Setup(x => x.ShowDialog(It.IsAny<Form>())).Returns(DialogResult.OK);
@@ -89,6 +103,7 @@ namespace UnitTestProject.MenuItemTests
         public void TearDown()
         {
             ServiceProviderHelper.DisposeServices();
+            ServiceProviderHelper.RemoveAsGlobalServiceProvider();
         }
         /// <summary>
         /// Verify that a new menu command object gets added to the OleMenuCommandService. 
@@ -101,7 +116,9 @@ namespace UnitTestProject.MenuItemTests
             {
                 //Verify that the menu command can be found
                 OleMenuCommandService mcs = ReflectionHelper.InvokeMethod<Package, OleMenuCommandService>(package, "GetService", typeof(IMenuCommandService));
-                Assert.IsNotNull(mcs.FindCommand(new CommandID(AnkhId.CommandSetGuid, (int)Ankh.AnkhCommand.Refresh)));
+                //Direct usage of OleMenuCommandService was removed with commit c3fa69f246fdb654d5448bedcca76ad8b9fac63f
+                //Instead the CtcCompiler or VsctCompiler will be used for that, but the resource will not be loaded here
+                Assert.IsNull(mcs.FindCommand(new CommandID(AnkhId.CommandSetGuid, (int)Ankh.AnkhCommand.Refresh)));
             }
         }
     }

@@ -46,6 +46,10 @@ namespace Ankh.Services
         {
             base.OnInitialize();
             GetService<IAnkhPackage>().RegisterIdleProcessor(this);
+            //HACK: Retrieve IVsUIShell now from the UI thread, because later AsyncPackage doesn't allow it from a background thread.
+            //TODO: Implement an async version of AnkhService and this AnkhCommandService if possible
+            IVsUIShell shell = UIShell;
+            Debug.Assert(shell != null);
         }
 
         IVsUIShell _uiShell;
@@ -342,7 +346,7 @@ namespace Ankh.Services
 
         void PostCheck()
         {
-            AnkhAction pt = delegate()
+            AnkhAction pt = delegate ()
             {
                 Thread.Sleep(50);
                 SyncContext.Post(TryRelease, null);
@@ -450,19 +454,19 @@ namespace Ankh.Services
                 TryReleaseDelayed();
             else
                 if (e.Periodic)
+            {
+                for (int i = 0; i < _tickCount; i++)
                 {
-                    for (int i = 0; i < _tickCount; i++)
+                    if (_ticks[i] != 0)
                     {
-                        if (_ticks[i] != 0)
-                        {
-                            Debug.WriteLine(string.Format("AnkhSVN: Tocking {0}", AnkhCommand.TickFirst + i));
-                            PostExecCommand(AnkhCommand.TickFirst + i);
-                        }
+                        Debug.WriteLine(string.Format("AnkhSVN: Tocking {0}", AnkhCommand.TickFirst + i));
+                        PostExecCommand(AnkhCommand.TickFirst + i);
                     }
                 }
+            }
 
             if (e.NonPeriodic)
-            {                
+            {
                 AnkhAction action;
 
                 while (null != (action = GetIdleAction()))
@@ -496,7 +500,7 @@ namespace Ankh.Services
 
                 return null;
             }
-        }                
+        }
 
         public void PostIdleCommand(AnkhCommand command)
         {
@@ -506,7 +510,7 @@ namespace Ankh.Services
         public void PostIdleCommand(AnkhCommand command, object args)
         {
             PostIdleAction(
-                delegate()
+                delegate ()
                 {
                     DirectlyExecCommand(command, args);
                 });

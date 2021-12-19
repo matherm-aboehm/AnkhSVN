@@ -72,7 +72,7 @@ namespace IntegrationTests
         #endregion
 
         [HostType("VS IDE")]
-        [TestMethod]
+        [TestMethod, Ignore] //ignore for vs2017, because the legacy template for c++ is missing
         public void CPPWinformsApplication()
         {
             UIThreadInvoker.Invoke((ThreadInvoker)delegate()
@@ -88,7 +88,7 @@ namespace IntegrationTests
                 string itemTemplateName = "newc++file.cpp";
                 string newFileName = "Test.cpp";
 
-                DTE dte = (DTE)VsIdeTestHostContext.ServiceProvider.GetService(typeof(DTE));
+                DTE dte = VsIdeTestHostContext.Dte;
 
                 TestUtils testUtils = new TestUtils();
 

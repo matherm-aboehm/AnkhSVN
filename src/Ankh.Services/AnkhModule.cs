@@ -78,7 +78,7 @@ namespace Ankh
         /// Ensures the service exists when using the testing infrastructure; skipped in release builds
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        [Conditional("Debug")]
+        [Conditional("DEBUG")]
         protected void EnsureService<T>()
         {
             if (Runtime.PreloadServicesViaEnsure)

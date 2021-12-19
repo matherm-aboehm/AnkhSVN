@@ -1,9 +1,45 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRunConfiguration name="IntegrationTests" id="0af6b64c-46e5-4d20-a1b5-4d2a86380e98" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<TestSettings name="IntegrationTests" id="0af6b64c-46e5-4d20-a1b5-4d2a86380e98" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Description>This is a default test run configuration for a local test run.</Description>
-  <Hosts>
-    <VSSDKTestHostRunConfig name="VS IDE" HiveName="9.0Exp" IsRANU="true" xmlns="http://microsoft.com/schemas/VisualStudio/SDK/Tools/IdeHostAdapter/2006/06" />
-  </Hosts>
   <Deployment enabled="false" />
-  <TestTypeSpecific />
-</TestRunConfiguration>
+  <Execution>
+    <Hosts type="VS IDE">
+      <VSSDKTestHostRunConfig name="VS IDE" HiveKind="DevEnv" HiveName="15.0Exp" xmlns="http://microsoft.com/schemas/VisualStudio/SDK/Tools/IdeHostAdapter/2006/06" />
+    </Hosts>
+    <Timeouts runTimeout="7200000" testTimeout="300000" />
+    <TestTypeSpecific>
+      <UnitTestRunConfig testTypeId="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b">
+        <AssemblyResolution>
+          <TestDirectory useLoadContext="true" />
+          <RuntimeResolution>
+            <Directory path="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin" includeSubDirectories="false" />
+            <Directory path="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\PublicAssemblies" includeSubDirectories="false" />
+            <Directory path="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\PrivateAssemblies" includeSubDirectories="false" />
+            <Directory path="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\Editor" includeSubDirectories="false" />
+            <Directory path="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\TestWindow" includeSubDirectories="false" />
+            <Directory path="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\Extensions\Microsoft\Web Tools\Editors" includeSubDirectories="false" />
+          </RuntimeResolution>
+          <DiscoveryResolution>
+            <Directory path="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin" includeSubDirectories="false" />
+            <Directory path="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\PublicAssemblies" includeSubDirectories="false" />
+            <Directory path="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\PrivateAssemblies" includeSubDirectories="false" />
+            <Directory path="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\Editor" includeSubDirectories="false" />
+            <Directory path="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\TestWindow" includeSubDirectories="false" />
+            <Directory path="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\Extensions\Microsoft\Web Tools\Editors" includeSubDirectories="false" />
+          </DiscoveryResolution>
+        </AssemblyResolution>
+      </UnitTestRunConfig>
+    </TestTypeSpecific>
+    <AgentRule name="LocalMachineDefaultRole">
+    </AgentRule>
+  </Execution>
+  <!-- https://github.com/microsoft/VisualStudio-TestHost -->
+  <Properties>
+    <Property name="VSApplication" value="VisualStudio"/>
+    <Property name="VSExecutable" value="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\devenv.exe"/>
+    <Property name="VSVersion" value="15.0"/>
+    <Property name="VSHive" value="Exp"/>
+    <Property name="VSDebugMixedMode" value="false"/>
+    <Property name="VSLaunchTimeoutInSeconds" value="120"/>
+  </Properties>
+</TestSettings>

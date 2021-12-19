@@ -54,7 +54,7 @@ namespace Ankh.VS
         Sendto = 0x0009,
         BitBucket = 0x000a,
         Startmenu = 0x000b,
-        MyDocuments = 0x000c,
+        MyDocuments = Personal,
         MyMusic = 0x000d,
         MyVideo = 0x000e,
         DesktopDirectory = 0x0010,

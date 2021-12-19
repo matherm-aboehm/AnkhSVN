@@ -129,7 +129,7 @@ namespace Ankh.Scc
             }
         }
 
-        public event EventHandler AdvertisePublish;
+        //public event EventHandler AdvertisePublish;
 
         protected virtual void RaisePropertyChanged(string propertyName)
         {

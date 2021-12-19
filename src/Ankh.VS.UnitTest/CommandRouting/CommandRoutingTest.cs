@@ -25,29 +25,38 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Ankh.UI.Services;
 using Ankh.UI;
 using Ankh.Scc;
+using Ankh.VS;
 using NUnit.Framework;
 using Moq;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
+using EnvDTE;
 using System.Windows.Forms.Design;
 using System.Windows.Forms;
 using System.IO;
+using System.Threading;
 using Microsoft.VsSDK.UnitTestLibrary;
 
 namespace AnkhSvn_UnitTestProject.CommandRouting
 {
-    
+
     [TestFixture]
     public class CommandRoutingTest
     {
         static class CommandTester
         {
+            internal static AnkhRuntime lastRuntime;
             public static bool TestExecution(AnkhCommand commandEnum)
             {
                 AnkhRuntime runtime = new AnkhRuntime(ServiceProviderHelper.serviceProvider);
                 runtime.AddModule(new AnkhModule(runtime));
+                //TODO: make it work without the following module (disable scheduling updates)
+                runtime.AddModule(new AnkhVSModule(runtime));
+                runtime.AddModule(new AnkhUIModule(runtime));
                 runtime.Start();
+                lastRuntime = runtime;
 
                 return runtime.CommandMapper.Execute(commandEnum, new CommandEventArgs(commandEnum, runtime.Context));
             }
@@ -62,9 +71,13 @@ namespace AnkhSvn_UnitTestProject.CommandRouting
             }
         }
 
+        IDisposable siteContext;
+
         [SetUp]
         public void Initialize()
         {
+            ServiceProviderHelper.InitAsGlobalServiceProvider();
+
             // Create the package
             IVsPackage package = new AnkhSvnPackage() as IVsPackage;
             Assert.IsNotNull(package, "The object does not implement IVsPackage");
@@ -73,8 +86,15 @@ namespace AnkhSvn_UnitTestProject.CommandRouting
             var regEditors = new Mock<SVsRegisterEditors>().As<IVsRegisterEditors>();
 
             var vsShell = new Mock<SVsShell>().As<IVsShell>();
-            object r = @"SOFTWARE\Microsoft\VisualStudio\8.0";
+            object r = @"SOFTWARE\Microsoft\VisualStudio\14.0";
             vsShell.Setup(x => x.GetProperty((int)__VSSPROPID.VSSPROPID_VirtualRegistryRoot, out r)).Returns(VSErr.S_OK);
+            object trueBox = true;
+            vsShell.Setup(x => x.GetProperty((int)__VSSPROPID.VSSPROPID_IsInCommandLineMode, out trueBox)).Returns(VSErr.S_OK);
+            const int VSSPROPID_ReleaseVersion = -9068; // VS 12+
+            object version = "14.0";
+            vsShell.Setup(x => x.GetProperty(VSSPROPID_ReleaseVersion, out version)).Returns(VSErr.S_OK);
+
+            var vsUIShell = new Mock<SVsUIShell>().As<IVsUIShell>();
 
             var vsTextMgr = new Mock<SVsTextManager>().As<IVsTextManager>();
 
@@ -84,25 +104,39 @@ namespace AnkhSvn_UnitTestProject.CommandRouting
 
             var outputWindow = new Mock<SVsOutputWindow>().As<IVsOutputWindow>();
 
+            var dte = new Mock<SDTE>().As<_DTE>();
+            dte.SetupGet(x => x.Version).Returns((string)null);
+
+            var errorHandler = new Mock<IAnkhErrorHandler>();
+            errorHandler.Setup(x => x.IsEnabled(It.IsAny<Exception>())).Returns(false);
+
             ServiceProviderHelper.AddService(typeof(IAnkhPackage), package);
             ServiceProviderHelper.AddService(typeof(SVsOutputWindow), outputWindow.Object);
             ServiceProviderHelper.AddService(typeof(SOleComponentManager), olMgr.Object);
             ServiceProviderHelper.AddService(typeof(IVsMonitorSelection), monitorSelection.Object);
             ServiceProviderHelper.AddService(typeof(SVsTextManager), vsTextMgr.Object);
             ServiceProviderHelper.AddService(typeof(SVsShell), vsShell.Object);
+            ServiceProviderHelper.AddService(typeof(SVsUIShell), vsUIShell.Object);
             ServiceProviderHelper.AddService(typeof(SVsRegisterEditors), regEditors.Object);
             ServiceProviderHelper.AddService(typeof(ISvnStatusCache), statusCache.Object);
+            ServiceProviderHelper.AddService(typeof(SDTE), dte.Object);
+            ServiceProviderHelper.AddService(typeof(IAnkhErrorHandler), errorHandler.Object);
 
             var uiService = new Mock<IUIService>();
             uiService.Setup(x => x.ShowDialog(It.IsAny<Form>())).Returns(DialogResult.OK);
 
             ServiceProviderHelper.AddService(typeof(IUIService), uiService.Object);
+
+            siteContext = ServiceProviderHelper.SetSite(package);
         }
 
         [TearDown]
         public void Cleanup()
         {
+            siteContext.Dispose();
+            siteContext = null;
             ServiceProviderHelper.DisposeServices();
+            ServiceProviderHelper.RemoveAsGlobalServiceProvider();
         }
 
         [Test]
@@ -116,7 +150,7 @@ namespace AnkhSvn_UnitTestProject.CommandRouting
             }
         }
 
-        [Test]
+        [Test, Apartment(ApartmentState.STA)]
         public void AddRepositoryRoot()
         {
             Assert.IsTrue(CommandTester.TestExecution(AnkhCommand.RepositoryBrowse), "Add repository root always enabled");
@@ -131,7 +165,7 @@ namespace AnkhSvn_UnitTestProject.CommandRouting
                 CommandTester.TestExecution(AnkhCommand.WorkingCopyBrowse);
                 Assert.Fail();
             }
-            catch(InvalidOperationException)
+            catch (InvalidOperationException)
             {
 
             }
@@ -155,7 +189,7 @@ namespace AnkhSvn_UnitTestProject.CommandRouting
 
             using (ServiceProviderHelper.AddService(typeof(ISelectionContext), selC))
             {
-                Assert.That(CommandTester.TestExecution(AnkhCommand.ItemAnnotate), Is.False, 
+                Assert.That(CommandTester.TestExecution(AnkhCommand.ItemAnnotate), Is.False,
                     "Blame with empty selection doesn't execute");
             }
         }
@@ -274,8 +308,8 @@ namespace AnkhSvn_UnitTestProject.CommandRouting
 
             using (ServiceProviderHelper.AddService(typeof(ISelectionContext), selC))
             {
-                Assert.That(CommandTester.TestExecution(AnkhCommand.Refresh), Is.True,
-                    "Refresh works with empty selection");
+                Assert.That(CommandTester.TestExecution(AnkhCommand.Refresh), Is.False,
+                    "Refresh works only with non-empty selection");
             }
         }
 
@@ -299,7 +333,7 @@ namespace AnkhSvn_UnitTestProject.CommandRouting
             {
                 Assert.That(CommandTester.TestExecution(AnkhCommand.RemoveWorkingCopyExplorerRoot), Is.False);
             }
-        }       
+        }
 
         [Test]
         public void RevertItemCommand()
@@ -368,7 +402,7 @@ namespace AnkhSvn_UnitTestProject.CommandRouting
 
             //using (mocks.Playback())
             //{
-                CommandTester.TestExecution(AnkhCommand.ShowWorkingCopyExplorer);
+            CommandTester.TestExecution(AnkhCommand.ShowWorkingCopyExplorer);
             //}
         }
 

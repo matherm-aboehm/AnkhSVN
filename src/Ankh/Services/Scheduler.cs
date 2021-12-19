@@ -18,6 +18,7 @@ using System.Text;
 using System.Timers;
 using Microsoft.VisualStudio.Shell.Interop;
 using Ankh.Commands;
+using System.Diagnostics;
 
 namespace Ankh.Services
 {
@@ -56,6 +57,7 @@ namespace Ankh.Services
         {
             base.OnInitialize();
             Commands = GetService<IAnkhCommandService>();
+            Debug.Assert(Commands != null);
         }
 
         void OnTimerElapsed(object sender, ElapsedEventArgs e)
