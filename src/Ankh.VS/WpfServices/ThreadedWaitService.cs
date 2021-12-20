@@ -6,7 +6,7 @@ using Ankh.UI;
 
 namespace Ankh.WpfPackage.Services
 {
-    [GlobalService(typeof(IAnkhThreadedWaitService))]
+    [GlobalService(typeof(IAnkhThreadedWaitService), MinVersion=VSInstance.VS2010)]
     sealed class ThreadedWaitService : AnkhService, IAnkhThreadedWaitService
     {
         public ThreadedWaitService(IAnkhServiceProvider context)

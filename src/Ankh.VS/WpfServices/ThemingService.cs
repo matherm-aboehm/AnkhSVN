@@ -33,13 +33,7 @@ namespace Ankh.WpfPackage.Services
 
         public Color GetThemedColorValue(ref Guid colorCategory, string colorName, bool foreground)
         {
-            Type vsUIShell5 = typeof(IVsUIShell5);
-
-            if (vsUIShell5 == null)
-                throw new InvalidOperationException();
-
             IVsUIShell5 vs5 = GetService<IVsUIShell5>(typeof(SVsUIShell));
-            MethodInfo method = vsUIShell5.GetMethod("GetThemedColor");
             
             uint clr = vs5.GetThemedColor(ref colorCategory, colorName, foreground ? (uint)1 : 0);
             // TODO: Use bitshifting

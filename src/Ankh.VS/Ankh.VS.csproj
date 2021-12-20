@@ -52,6 +52,7 @@
     <Compile Include="Services\GlobalCommandHook.cs" />
     <Compile Include="Services\DiffMergeInstance.cs" />
     <Compile Include="Services\InternalDiff.cs" />
+    <Compile Include="Services\ThreadedWaitService.cs" />
     <Compile Include="LanguageServices\Core\AnkhEditorFactory.cs" />
     <Compile Include="LanguageServices\Core\AnkhLanguagePreferences.cs" />
     <Compile Include="Services\AnkhVSColor.cs" />
@@ -65,6 +66,8 @@
     <Compile Include="Selection\SelectionContext.cs" />
     <Compile Include="Selection\SelectionUtils.cs" />
     <Compile Include="SolutionExplorer\FileIconMapper.cs" />
+    <Compile Include="SolutionExplorer\SolutionExplorerWindow.cs" />
+    <Compile Include="SolutionExplorer\SolutionTreeViewManager.cs" />
     <Compile Include="SolutionExplorer\StatusImageMapper.cs" />
     <Compile Include="SolutionExplorer\Win32TreeView.cs" />
     <Compile Include="WebBrowser\AnkhWebBrowser.cs" />
