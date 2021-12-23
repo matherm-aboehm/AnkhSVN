@@ -58,6 +58,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Services\ILocalRegistry4.cs" Condition="'$(UseVsSdkVersion)' &lt;= '9.0'" />
     <Compile Include="Services\RepositoryProvider\AnkhRepositoryProviderService.cs" />
     <Compile Include="Services\RepositoryProvider\ScmRepositoryProviderProxy.cs" />
     <Compile Include="Services\TempDirManager.cs" />

@@ -130,7 +130,7 @@ namespace Ankh.Configuration
                 foreach (PropertyDescriptor pd in TypeDescriptor.GetProperties(config))
                 {
                     string value = reg.GetValue(pd.Name, null) as string;
-
+                    
                     if (pd.Name == "DiffExePaths")
                     {
                         RegistryKey diffRegKey = OpenHKCUKey("Configuration");
@@ -233,7 +233,7 @@ namespace Ankh.Configuration
                                 reg.CreateSubKey(pd.Name);
                                 RegistryKey extToolReg = OpenHKCUKey("Configuration");
                                 extToolReg = extToolReg.OpenSubKey(pd.Name, true);
-
+                                
                                 if (extToolReg != null)
                                 {
                                     foreach (string extToolDef in extToolReg.GetValueNames())
@@ -459,19 +459,35 @@ namespace Ankh.Configuration
         public RegistryKey OpenVSInstanceKey(string name)
         {
             RegistryKey rootKey = null;
+            if (VSVersion.VS2005)
+            {
+                ILocalRegistry3 lr3 = GetService<ILocalRegistry3>(typeof(SLocalRegistry));
 
-            ILocalRegistry4 lr4 = GetService<ILocalRegistry4>(typeof(SLocalRegistry));
+                if (lr3 == null)
+                    return null;
 
-            if (lr4 == null)
-                return null;
+                string root;
 
-            uint type;
-            const uint VsLocalRegistryRootHandle_CURRENT_USER = unchecked((uint)-2147483647);
-            string root;
-            if (!VSErr.Succeeded(lr4.GetLocalRegistryRootEx(2 /* _VsLocalRegistryType.Configuration */, out type, out root)))
-                return null;
+                if (!VSErr.Succeeded(lr3.GetLocalRegistryRoot(out root)))
+                    return null;
 
-            rootKey = ((type == VsLocalRegistryRootHandle_CURRENT_USER) ? Registry.CurrentUser : Registry.LocalMachine).OpenSubKey(root);
+                rootKey = Registry.LocalMachine.OpenSubKey(root);
+            }
+            else
+            {
+                ILocalRegistry4 lr4 = GetService<ILocalRegistry4>(typeof(SLocalRegistry));
+
+                if (lr4 == null)
+                    return null;
+
+                uint type;
+                const uint VsLocalRegistryRootHandle_CURRENT_USER = unchecked((uint)-2147483647);
+                string root;
+                if (!VSErr.Succeeded(lr4.GetLocalRegistryRootEx(2 /* _VsLocalRegistryType.Configuration */, out type, out root)))
+                    return null;
+
+                rootKey = ((type == VsLocalRegistryRootHandle_CURRENT_USER) ? Registry.CurrentUser : Registry.LocalMachine).OpenSubKey(root);
+            }
 
             if (rootKey == null)
                 return null;
@@ -484,33 +500,49 @@ namespace Ankh.Configuration
             }
         }
 
-        public RegistryKey OpenVSUserKey(string name)
-        {
-            RegistryKey rootKey = null;
+		public RegistryKey OpenVSUserKey(string name)
+		{
+			RegistryKey rootKey = null;
+			if (VSVersion.VS2005)
+			{
+				ILocalRegistry3 lr3 = GetService<ILocalRegistry3>(typeof(SLocalRegistry));
 
-            ILocalRegistry4 lr4 = GetService<ILocalRegistry4>(typeof(SLocalRegistry));
+				if (lr3 == null)
+					return null;
 
-            if (lr4 == null)
-                return null;
+				string root;
 
-            uint type;
-            const uint VsLocalRegistryRootHandle_CURRENT_USER = unchecked((uint)-2147483647);
-            string root;
-            if (!VSErr.Succeeded(lr4.GetLocalRegistryRootEx(1 /* _VsLocalRegistryType.UserSettings */, out type, out root)))
-                return null;
+				if (!VSErr.Succeeded(lr3.GetLocalRegistryRoot(out root)))
+					return null;
 
-            rootKey = ((type == VsLocalRegistryRootHandle_CURRENT_USER) ? Registry.CurrentUser : Registry.LocalMachine).OpenSubKey(root);
+				rootKey = Registry.CurrentUser.OpenSubKey(root);
+			}
+			else
+			{
+				ILocalRegistry4 lr4 = GetService<ILocalRegistry4>(typeof(SLocalRegistry));
 
-            if (rootKey == null)
-                return null;
-            else if (string.IsNullOrEmpty(name))
-                return rootKey;
+				if (lr4 == null)
+					return null;
 
-            using (rootKey)
-            {
-                return rootKey.OpenSubKey(name);
-            }
-        }
+				uint type;
+				const uint VsLocalRegistryRootHandle_CURRENT_USER = unchecked((uint)-2147483647);
+				string root;
+				if (!VSErr.Succeeded(lr4.GetLocalRegistryRootEx(1 /* _VsLocalRegistryType.UserSettings */, out type, out root)))
+					return null;
+
+				rootKey = ((type == VsLocalRegistryRootHandle_CURRENT_USER) ? Registry.CurrentUser : Registry.LocalMachine).OpenSubKey(root);
+			}
+
+			if (rootKey == null)
+				return null;
+			else if (string.IsNullOrEmpty(name))
+				return rootKey;
+
+			using (rootKey)
+			{
+				return rootKey.OpenSubKey(name);
+			}
+		}
 
         #endregion
     }
