@@ -50,6 +50,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnkhDiffModule.cs" />
+    <Compile Include="AnkhInternalDiff.cs" />
     <Compile Include="Common\Classes\Caret.cs" />
     <Compile Include="Common\Classes\Enumerations.cs" />
     <Compile Include="Common\Classes\Finder.cs" />

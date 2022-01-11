@@ -74,6 +74,10 @@
     <None Include="Ankh.VS.UnitTest.snk" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Ankh.Diff\Ankh.Diff.csproj">
+      <Project>{62F97060-6A9E-477D-B15B-E1A1F5320039}</Project>
+      <Name>Ankh.Diff</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Ankh.Scc\Ankh.Scc.csproj">
       <Project>{ECE36A69-DD85-4AAB-B329-12BAE4675056}</Project>
       <Name>Ankh.Scc</Name>
