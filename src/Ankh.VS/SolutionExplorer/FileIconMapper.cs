@@ -53,7 +53,7 @@ namespace Ankh.VS.SolutionExplorer
 
             int icon = GetProjectIcon(path);
 
-            if (icon == -1 && VSVersion.VS2012OrLater)
+            if (icon == -1 && VSVersion.SupportsTheming)
                 icon = GetThemeIcon(path);
 
             if (icon == -1)

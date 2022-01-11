@@ -83,7 +83,7 @@ namespace Ankh.UI.PendingChanges
                         control.Dock = DockStyle.Fill;
                         Controls.Add(control);
 
-                        if (VSVersion.VS2012OrLater && Context != null)
+                        if (VSVersion.SupportsTheming && Context != null)
                         {
                             IWinFormsThemingService wts = Context.GetService<IWinFormsThemingService>();
 

@@ -550,7 +550,7 @@ namespace Ankh.Scc
                     {
                         IAnkhServiceEvents services = GetService<IAnkhServiceEvents>();
 
-                        if (services != null && VSVersion.VS2012OrLater)
+                        if (services != null && VSVersion.SupportsTheming)
                             services.OnThemeChanged(EventArgs.Empty);
                     }
                     break;

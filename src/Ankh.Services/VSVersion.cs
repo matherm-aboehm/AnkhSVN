@@ -154,5 +154,17 @@ namespace Ankh
         {
             get { return FullVersion.Major >= 10; }
         }
+
+        public static bool VS2010
+        {
+            get { return FullVersion.Major == 10; }
+        }
+
+        static readonly Version _vS11RCVersion = new Version(11, 0, 50522);
+
+        public static bool SupportsTheming
+        {
+            get { return FullVersion >= _vS11RCVersion; }
+        }
     }
 }

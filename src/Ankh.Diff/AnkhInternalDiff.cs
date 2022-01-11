@@ -45,7 +45,7 @@ namespace Ankh.Diff
 
             diffEditor.CreateDiffEditor(this, args);
 
-            if (diffEditor.WindowFrame != null && !args.ShowDiffAsDocument)
+            if (diffEditor.WindowFrame != null && !args.ShowDiffAsDocument && VSVersion.VS2010OrLater)
                 diffEditor.WindowFrame.SetProperty((int)__VSFPROPID.VSFPROPID_FrameMode, (int)VSFRAMEMODE.VSFM_Float);
 
             return true;

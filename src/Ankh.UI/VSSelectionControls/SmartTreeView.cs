@@ -41,7 +41,7 @@ namespace Ankh.UI.VSSelectionControls
             if (container != null)
                 container.Add(this);
 
-            if (!DesignMode)
+            if (!DesignMode && VSVersion.VS2010OrLater)
                 ShowLines = false;
         }
 
@@ -113,13 +113,17 @@ namespace Ankh.UI.VSSelectionControls
 
             if (!_inVSTheming && SmartListView.IsXPPlus)
             {
-                NativeMethods.SetWindowTheme(Handle, "Explorer", null);
+                if (VSVersion.VS2010OrLater)
+                    NativeMethods.SetWindowTheme(Handle, "Explorer", null);
 
-                uint flags = (uint)NativeMethods.SendMessage(Handle, TVM_GETEXTENDEDSTYLE, IntPtr.Zero, IntPtr.Zero);
+                if (VSVersion.VS2010OrLater || SmartListView.VistaOrLater)
+                {
+                    uint flags = (uint)NativeMethods.SendMessage(Handle, TVM_GETEXTENDEDSTYLE, IntPtr.Zero, IntPtr.Zero);
 
-                flags |= 0x0004; // TVS_EX_DOUBLEBUFFER
+                    flags |= 0x0004; // TVS_EX_DOUBLEBUFFER
 
-                NativeMethods.SendMessage(Handle, TVM_SETEXTENDEDSTYLE, (IntPtr)flags, (IntPtr)flags);
+                    NativeMethods.SendMessage(Handle, TVM_SETEXTENDEDSTYLE, (IntPtr)flags, (IntPtr)flags);
+                }
             }
         }
 

@@ -104,7 +104,9 @@ namespace Ankh.UI.OptionsPages
             Config.MergeExePath = SaveBox(mergeExeBox);
             Config.PatchExePath = SaveBox(patchExeBox);
             Config.ForceExternalBrowser = forceExternalBrowser.Checked;
-            Config.FloatDiffEditors = floatVSDiffViewers.Checked;
+
+            if (VSVersion.VS2010OrLater)
+                Config.FloatDiffEditors = floatVSDiffViewers.Checked;
         }
 
         static string SaveBox(ComboBox box)
