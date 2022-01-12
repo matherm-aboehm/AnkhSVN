@@ -29,6 +29,7 @@ using Ankh.Scc;
 using Ankh.VS;
 using Ankh.UI;
 using Ankh.VSPackage.Attributes;
+using Ankh.WpfUI;
 using System.Collections.Generic;
 
 namespace Ankh.VSPackage
@@ -92,6 +93,7 @@ namespace Ankh.VSPackage
             _runtime.AddModule(new AnkhSccModule(_runtime));
             _runtime.AddModule(new AnkhVSModule(_runtime));
             _runtime.AddModule(new AnkhUIModule(_runtime));
+            _runtime.AddModule(new AnkhWpfUIModule(_runtime));
 
             RegisterEditors();
 
