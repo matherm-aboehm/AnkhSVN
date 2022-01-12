@@ -1,0 +1,55 @@
+name: MSBuild
+
+on:
+  workflow_dispatch:
+
+env:
+  SOLUTION_FILE_PATH: build/src/AnkhSVN.sln
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+    - name: Git Checkout
+      uses: actions/checkout@v2
+      with:
+        path: build
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1
+      with:
+        vs-version: "[15.0,17.0)"
+
+    - name: Setup VSTest Path
+      uses: darenm/Setup-VSTest@v1
+
+    - name: Setup version
+      working-directory: build
+      run: cmd.exe /C scripts\gh-version-setup ${{ github.run_number }}
+      
+    - name: Build 2017-2019
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: msbuild /m /v:m /restore /p:UseVsSdkVersion=15.0 /p:Configuration=Release ${{env.SOLUTION_FILE_PATH}} @build\scripts\msbuild-version.rsp
+
+    - name: VSTest-x86
+      run: vstest.console.exe /Platform:x86 build/src/Ankh.Tests/bin/Release/Ankh.Tests.dll
+
+    - name: VSTest-x86
+      run: vstest.console.exe /Platform:x86 build/src/Ankh.VS.UnitTest/bin/Release/AnkhSvn.UnitTest.dll
+
+    - name: Package vsix 2017-2019
+      uses: actions/upload-artifact@v2
+      with:
+        name: Ankh-VSIX-2017-2019
+        path: build/src/Ankh.Package/bin/release/Ankh.Package.vsix
+
+    - name: Build 2010-2015
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: msbuild /m /v:m /restore /t:rebuild /p:UseVsSdkVersion=10.0 /p:Configuration=Release ${{env.SOLUTION_FILE_PATH}} @build\scripts\msbuild-version.rsp
+
+    - name: Package vsix 2010-2015
+      uses: actions/upload-artifact@v2
+      with:
+        name: Ankh-VSIX-2010-2015
+        path: build/src/Ankh.Package/bin/release/Ankh.Package.vsix
