@@ -13,6 +13,7 @@ namespace Ankh.VSPackage
     // to be registered as package.
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [ProvideAutoLoad(AnkhId.SccProviderId, PackageAutoLoadFlags.BackgroundLoad)] // Load on 'Scc active' for Subversion
+    [ProvideBindingPath]
     public partial class AnkhSvnPackage : AsyncPackage
     {
 

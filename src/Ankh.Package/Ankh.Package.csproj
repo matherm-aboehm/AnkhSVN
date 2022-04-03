@@ -28,6 +28,13 @@
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <OldToolsVersion>4.0</OldToolsVersion>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(VSSDK)' == '' AND '$(UseVsSdkVersion)' &lt;= '14.0'">
+    <VSSDKVar>VSSDK$(UseVsSdkVersion.Replace('.', ''))Install</VSSDKVar>
+    <VSSDK>$([System.Environment]::ExpandEnvironmentVariables('%$(VSSDKVar)%'))VisualStudioIntegration\</VSSDK>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(VSSDK)' == '' AND '$(VisualStudioVersion)' &gt;= '15.0'">
+    <VSSDK Condition="'$(VsInstallRoot)' != ''">$([System.IO.Path]::Combine('$(VsInstallRoot.TrimEnd('\'))', 'VSSDK', 'VisualStudioIntegration'))\</VSSDK>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug\</OutputPath>
@@ -113,6 +120,9 @@
     <Compile Include="Attributes\ProvideAnkhExtensionRedirectAttribute.cs" />
     <Compile Include="Attributes\ProvideSourceControlCommand.cs" />
     <Compile Include="Attributes\ProvideThemeInformation.cs" />
+    <Compile Include="$(VSSDK)Common\Source\CSharp\RegistrationAttributes\ProvideBindingPathAttribute.cs" Condition="'$(UseVsSdkVersion)' &lt; '15.0'">
+      <Link>Attributes\ProvideBindingPathAttribute.cs</Link>
+    </Compile>
     <Compile Include="OptionPages\AdvancedDiffUserToolsSettingsPage.cs">
       <SubType>Component</SubType>
     </Compile>

@@ -94,6 +94,7 @@ namespace Ankh
         /// </summary>
         public const string BmpId = "9db594ca-ebdd-40e1-9e37-51b7f9ef8df0";
         public const string ExtensionRedirectId = "3cbbbf2e-22f7-4f02-af63-892bd2120485";
+        public const string ServicesRedirectId = "E7151654-3E35-4BC9-8F79-A8184534E848";
 
         public const string ImageCatalogId = "0c431364-3245-4a8a-945f-97fa5aab2d98";
 

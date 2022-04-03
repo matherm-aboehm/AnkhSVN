@@ -22,6 +22,7 @@ namespace Ankh.VSPackage
     // package has a load key embedded in its resources.
     [ProvideLoadKey("Standard", AnkhId.PlkVersion, AnkhId.PlkProduct, AnkhId.PlkCompany, 1)]
     [ProvideAutoLoad(AnkhId.SccProviderId)] // Load on 'Scc active' for Subversion
+    [ProvideBindingPath]
     public partial class AnkhSvnPackage : Package
     {
         /// <summary>
